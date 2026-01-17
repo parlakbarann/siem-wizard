@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="auth.loginPageTitle">Giriş Yap - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <div class="navbar-right">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Giriş Yap</h1>
+            <p class="page-subtitle">Hesabınıza giriş yapın ve SIEM kurallarınızı yönetin</p>
+        </header>
+
+        <!-- Login Form -->
+        <div class="glass-card" style="max-width: 500px; margin: 0 auto;">
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Kullanıcı Adı</label>
+                    <input type="text" id="username" placeholder="Kullanıcı adınız" class="form-input" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Şifre</label>
+                    <input type="password" id="password" placeholder="Şifreniz" class="form-input" required autocomplete="current-password">
+                </div>
+
+
+                <!-- Error Message -->
+                <div id="errorArea" class="error-message" style="display: none;"></div>
+
+                <!-- Success Message -->
+                <div id="successArea" class="success-message" style="display: none;"></div>
+
+                <!-- Login Button -->
+                <button type="submit" id="loginButton" class="btn btn-primary btn-full" style="height: 56px; margin-top: 1rem;">
+                    Giriş Yap
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Hesabınız yok mu?
+                    <a href="/register" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                        Kayıt Ol
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Bu araç, <span class="footer-highlight">Baran Parlak</span> tarafından üretilmiştir.
+    </footer>
+
+    <script>
+        // Check if already logged in
+        window.onload = async () => {
+            // Force English for login page if no language is set
+            if (!localStorage.getItem('language')) {
+                localStorage.setItem('language', 'en');
+            }
+
+            // Initialize i18n
+            await i18n.init();
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    // Already logged in, redirect to home
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                // Not logged in, stay on login page
+            }
+        };
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const btn = document.getElementById('loginButton');
+            const errorArea = document.getElementById('errorArea');
+            const successArea = document.getElementById('successArea');
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                errorArea.textContent = 'Lütfen tüm alanları doldurun.';
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            btn.textContent = 'Giriş yapılıyor...';
+            errorArea.style.display = 'none';
+            successArea.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Giriş başarısız');
+                }
+
+                // Success
+                successArea.textContent = 'Giriş başarılı! Yönlendiriliyorsunuz...';
+                successArea.style.display = 'block';
+
+                // Redirect to home page after 1 second
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                errorArea.textContent = error.message;
+                errorArea.style.display = 'block';
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                btn.textContent = 'Giriş Yap';
+            }
+        }
+    </script>
+    <script src="particles.js"></script>
+</body>
+</html>

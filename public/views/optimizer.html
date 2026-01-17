@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="optimizer.pageTitle">Kural İyileştirici - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+    <style>
+        .file-drop-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(26, 35, 68, 0.3);
+        }
+        .file-drop-area.drag-over {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+        .file-info-box {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="auth-loading">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <!-- Navbar Right: User Menu -->
+            <div class="navbar-right">
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-button" onclick="toggleUserDropdown()">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName">User</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdownUserName">User</div>
+                            <div class="user-dropdown-email" id="dropdownUserEmail">user@example.com</div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="/settings" class="user-dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span data-i18n="nav.settings">Ayarlar</span>
+                            </a>
+                            <button class="user-dropdown-item danger" onclick="handleLogout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span data-i18n="nav.logout">Çıkış Yap</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="authLinks" style="display: none;">
+                    <a href="/login" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" data-i18n="nav.login">Giriş Yap</a>
+                </div>
+            </div>
+
+            <!-- Navbar Menu -->
+            <div class="navbar-menu">
+                <a href="/" class="nav-link" data-i18n="nav.ruleGenerator">Kural Oluşturucu</a>
+                <a href="/catalog" class="nav-link" data-i18n="nav.catalog">Kural Kataloğu</a>
+                <a href="/optimizer" class="nav-link active" data-i18n="nav.optimizer">Kural İyileştirici</a>
+                <a href="/log-analyzer" class="nav-link" data-i18n="nav.logAnalyzer">Log Analizci</a>
+                <a href="/rule-tester" class="nav-link" data-i18n="nav.ruleTester">Kural Test</a>
+                <a href="/analytics" class="nav-link" data-i18n="nav.analytics">Analitik</a>
+                <a href="/history" class="nav-link" data-i18n="nav.history">Geçmiş</a>
+            </div>
+        </div>
+    </nav>
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Kural İyileştirici</h1>
+            <p class="page-subtitle">SIEM kurallarınızı AI ile optimize edin</p>
+        </header>
+
+        <!-- Input Tabs and Form -->
+        <div class="glass-card" style="max-width: 900px; margin: 0 auto;">
+            <!-- Platform Selection -->
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">SIEM Platformu</label>
+                <select id="siemPlatform" class="form-select" onchange="updatePlaceholders()">
+                    <option value="Splunk">Splunk (SPL)</option>
+                    <option value="QRadar">QRadar (AQL)</option>
+                    <option value="LogSign">LogSign (LQL)</option>
+                    <option value="Wazuh">Wazuh (XML)</option>
+                </select>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs" style="margin-bottom: 1.5rem;">
+                <button onclick="switchTab('paste')" id="tabPaste" class="tab active">
+                    📝 Kural Yapıştır
+                </button>
+                <button onclick="switchTab('upload')" id="tabUpload" class="tab">
+                    📁 Dosya Yükle
+                </button>
+            </div>
+
+            <!-- Paste Tab -->
+            <div id="pasteTab" class="tab-content">
+                <div class="form-group">
+                    <label class="form-label" id="ruleLabel">SIEM Kuralı</label>
+                    <textarea id="ruleInput" rows="12" placeholder="SIEM kuralınızı buraya yapıştırın..." class="form-textarea" style="font-family: var(--font-mono);"></textarea>
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="uploadTab" class="tab-content hidden">
+                <div class="file-drop-area" id="dropArea">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin: 0 auto 1rem; color: var(--text-muted);">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 1 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p style="color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 500;">Kural dosyasını sürükleyip bırakın</p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">veya</p>
+                    <label for="fileInput" class="btn btn-primary" style="cursor: pointer;">
+                        📂 Dosya Seç
+                    </label>
+                    <input type="file" id="fileInput" accept=".xml,.txt,.spl,.aql,.lql" class="hidden" onchange="handleFileSelect(event)">
+                </div>
+                <div id="fileInfo" class="file-info-box hidden">
+                    <p style="font-size: 0.9rem; color: var(--text-primary);">
+                        <span style="font-weight: 600;">Dosya:</span>
+                        <span id="fileName" style="color: var(--primary);"></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorArea" class="error-message" style="display: none; margin-top: 1rem;"></div>
+
+            <!-- Analyze Button -->
+            <button onclick="analyzeRule()" id="analyzeButton" class="btn btn-primary" style="width: 100%; padding: 1.25rem; margin-top: 1.5rem;">
+                <span id="buttonText">Kuralı Analiz Et</span>
+                <div id="loadingIndicator" class="spinner hidden"></div>
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div style="max-width: 900px; margin: 3rem auto 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--primary);">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    İyileştirme Önerileri
+                </h2>
+                <button id="copyButton" onclick="copySuggestions()" class="btn btn-secondary hidden">
+                    Kopyala
+                </button>
+            </div>
+            <div id="suggestionsOutput">
+                <div style="text-align: center; padding: 3rem; border: 2px dashed var(--border-color); border-radius: var(--radius-lg); color: var(--text-muted);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin: 0 auto 1rem; opacity: 0.5;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <p>Wazuh XML kuralınızı yapıştırın veya yükleyin, ardından analiz edin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Bu araç, <span class="footer-highlight">Baran Parlak</span> tarafından üretilmiştir.
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        ✓ Başarıyla Kopyalandı!
+    </div>
+
+    <script>
+        let currentRuleContent = '';
+
+        // Check login status on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showUserMenu(data.user);
+                } else {
+                    // Not authenticated - redirect to login
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                // Error checking auth - redirect to login
+                window.location.href = '/login';
+            }
+        });
+
+        function showUserMenu(user) {
+            document.body.classList.remove('auth-loading');
+            document.getElementById('userMenu').style.display = 'block';
+            document.getElementById('authLinks').style.display = 'none';
+
+            const initials = user.username.substring(0, 1).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('dropdownUserName').textContent = user.username;
+            document.getElementById('dropdownUserEmail').textContent = user.email || '';
+        }
+
+        function showAuthLinks() {
+            document.getElementById('userMenu').style.display = 'none';
+            document.getElementById('authLinks').style.display = 'block';
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (userMenu && !userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        // Update placeholders based on selected platform
+        function updatePlaceholders() {
+            const platform = document.getElementById('siemPlatform').value;
+            const ruleInput = document.getElementById('ruleInput');
+
+            const placeholders = {
+                'Splunk': 'Splunk SPL kuralınızı buraya yapıştırın...\n\nÖrnek:\nindex=security sourcetype=auth action=failure\n| stats count by src_ip\n| where count > 5',
+                'QRadar': 'QRadar AQL kuralınızı buraya yapıştırın...\n\nÖrnek:\nSELECT sourceip, COUNT(*) as count\nFROM events\nWHERE eventname = "Failed Login"\nGROUP BY sourceip\nHAVING count > 5',
+                'LogSign': 'LogSign LQL kuralınızı buraya yapıştırın...\n\nÖrnek:\nsource=authentication action=failure\n| group by src_ip\n| having count > 5',
+                'Wazuh': 'Wazuh XML kuralınızı buraya yapıştırın...\n\nÖrnek:\n<rule id="100001" level="5">\n  <if_sid>5710</if_sid>\n  <srcip>192.168.1.100</srcip>\n  <description>RDP Brute Force Alert</description>\n</rule>'
+            };
+
+            ruleInput.placeholder = placeholders[platform] || 'SIEM kuralınızı buraya yapıştırın...';
+        }
+
+        function switchTab(tab) {
+            const pasteTab = document.getElementById('pasteTab');
+            const uploadTab = document.getElementById('uploadTab');
+            const tabPaste = document.getElementById('tabPaste');
+            const tabUpload = document.getElementById('tabUpload');
+
+            if (tab === 'paste') {
+                pasteTab.classList.remove('hidden');
+                uploadTab.classList.add('hidden');
+                tabPaste.classList.add('active');
+                tabUpload.classList.remove('active');
+            } else {
+                pasteTab.classList.add('hidden');
+                uploadTab.classList.remove('hidden');
+                tabPaste.classList.remove('active');
+                tabUpload.classList.add('active');
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const errorArea = document.getElementById('errorArea');
+
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentRuleContent = e.target.result;
+                errorArea.style.display = 'none';
+            };
+            reader.onerror = () => {
+                errorArea.textContent = 'Dosya okunamadı. Lütfen tekrar deneyin.';
+                errorArea.style.display = 'block';
+            };
+            reader.readAsText(file);
+        }
+
+        const dropArea = document.getElementById('dropArea');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.remove('drag-over');
+            }, false);
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }, false);
+
+        async function analyzeRule() {
+            const btn = document.getElementById('analyzeButton');
+            const btnText = document.getElementById('buttonText');
+            const loader = document.getElementById('loadingIndicator');
+            const errorArea = document.getElementById('errorArea');
+            const output = document.getElementById('suggestionsOutput');
+
+            const platform = document.getElementById('siemPlatform').value;
+            const pasteTabActive = !document.getElementById('pasteTab').classList.contains('hidden');
+            let ruleContent = '';
+
+            if (pasteTabActive) {
+                ruleContent = document.getElementById('ruleInput').value.trim();
+            } else {
+                ruleContent = currentRuleContent;
+            }
+
+            if (!ruleContent) {
+                errorArea.textContent = 'Lütfen bir kural yapıştırın veya yükleyin.';
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = 'Analiz Ediliyor...';
+            errorArea.style.display = 'none';
+
+            output.innerHTML = `
+                <div class="loading-overlay">
+                    <div style="display: inline-block; margin-bottom: 1rem;">
+                        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                    </div>
+                    <p style="font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">AI Kuralı Analiz Ediyor...</p>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">Bu işlem 10-15 saniye sürebilir</p>
+                </div>`;
+
+            try {
+                const response = await fetch('/api/optimize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        siemPlatform: platform,
+                        ruleContent: ruleContent
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Sunucu hatası: ${response.status}`);
+                }
+
+                if (result.suggestions) {
+                    output.innerHTML = `<div class="code-block"><pre>${escapeHtml(result.suggestions)}</pre></div>`;
+                    document.getElementById('copyButton').classList.remove('hidden');
+                } else {
+                    throw new Error("API'den anlamlı bir yanıt alınamadı.");
+                }
+
+            } catch (err) {
+                console.error("Analiz hatası:", err);
+                errorArea.textContent = 'Hata: ' + err.message;
+                errorArea.style.display = 'block';
+                output.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: var(--radius-lg);">
+                        <p style="color: var(--error); font-weight: 500;">Analiz başarısız. Lütfen tekrar deneyin.</p>
+                    </div>`;
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = 'Kuralı Analiz Et';
+            }
+        }
+
+        function copySuggestions() {
+            const pre = document.querySelector('#suggestionsOutput pre');
+            if (!pre) return;
+
+            const text = pre.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 2500);
+            }).catch(err => {
+                console.error("Kopyalama hatası:", err);
+                alert("Kopyalama başarısız oldu.");
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+    <script src="particles.js"></script>
+</body>
+</html>

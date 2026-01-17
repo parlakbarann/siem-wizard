@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="settings.pageTitle">Ayarlar - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+</head>
+<body class="auth-loading">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <!-- Navbar Right: User Menu -->
+            <div class="navbar-right">
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-button" onclick="toggleUserDropdown()">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName">User</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdownUserName">User</div>
+                            <div class="user-dropdown-email" id="dropdownUserEmail">user@example.com</div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="/settings" class="user-dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span data-i18n="nav.settings">Ayarlar</span>
+                            </a>
+                            <button class="user-dropdown-item danger" onclick="handleLogout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span data-i18n="nav.logout">Çıkış Yap</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="authLinks" style="display: none;">
+                    <a href="/login" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" data-i18n="nav.login">Giriş Yap</a>
+                </div>
+            </div>
+
+            <!-- Navbar Menu -->
+            <div class="navbar-menu">
+                <a href="/" class="nav-link" data-i18n="nav.ruleGenerator">Kural Oluşturucu</a>
+                <a href="/catalog" class="nav-link" data-i18n="nav.catalog">Kural Kataloğu</a>
+                <a href="/optimizer" class="nav-link" data-i18n="nav.optimizer">Kural İyileştirici</a>
+                <a href="/log-analyzer" class="nav-link" data-i18n="nav.logAnalyzer">Log Analizci</a>
+                <a href="/rule-tester" class="nav-link" data-i18n="nav.ruleTester">Kural Test</a>
+                <a href="/analytics" class="nav-link" data-i18n="nav.analytics">Analitik</a>
+                <a href="/history" class="nav-link" data-i18n="nav.history">Geçmiş</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Account Settings</h1>
+            <p class="page-subtitle">Manage your API key and account information</p>
+        </header>
+
+        <!-- Language Settings Section -->
+        <div class="glass-card" style="max-width: 800px; margin: 0 auto 2rem;">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin: 0;" data-i18n="settings.languageTitle">
+                    Language Settings
+                </h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;" data-i18n="settings.languageSubtitle">
+                    Select interface language
+                </p>
+            </div>
+
+            <div class="language-options" id="languageOptions">
+                <button class="language-option" data-lang="tr" onclick="changeLanguage('tr')">
+                    <span class="lang-flag">🇹🇷</span>
+                    <span class="lang-name">Türkçe</span>
+                    <span class="lang-check" id="check-tr">✓</span>
+                </button>
+                <button class="language-option" data-lang="en" onclick="changeLanguage('en')">
+                    <span class="lang-flag">🇬🇧</span>
+                    <span class="lang-name">English</span>
+                    <span class="lang-check" id="check-en">✓</span>
+                </button>
+                <button class="language-option" data-lang="de" onclick="changeLanguage('de')">
+                    <span class="lang-flag">🇩🇪</span>
+                    <span class="lang-name">Deutsch</span>
+                    <span class="lang-check" id="check-de">✓</span>
+                </button>
+                <button class="language-option" data-lang="hi" onclick="changeLanguage('hi')">
+                    <span class="lang-flag">🇮🇳</span>
+                    <span class="lang-name">हिन्दी</span>
+                    <span class="lang-check" id="check-hi">✓</span>
+                </button>
+                <button class="language-option" data-lang="es" onclick="changeLanguage('es')">
+                    <span class="lang-flag">🇪🇸</span>
+                    <span class="lang-name">Español</span>
+                    <span class="lang-check" id="check-es">✓</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- API Key Section -->
+        <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin: 0;">
+                    DeepSeek API Key
+                </h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">
+                    Create rules using your own DeepSeek API key
+                </p>
+            </div>
+
+            <!-- Current Status -->
+            <div id="apiKeyStatus" class="api-key-status" style="margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                    <span>Loading...</span>
+                </div>
+            </div>
+
+            <!-- Update API Key Form -->
+            <div class="form-group">
+                <label class="form-label">
+                    New API Key
+                </label>
+                <div style="position: relative;">
+                    <input
+                        type="password"
+                        id="newApiKey"
+                        placeholder="sk-..."
+                        class="form-input"
+                        autocomplete="off"
+                        style="padding-right: 3rem;"
+                    >
+                    <button
+                        onclick="toggleApiKeyVisibility()"
+                        style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted);"
+                        type="button"
+                        title="Show/hide API key"
+                    >
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                    <a href="https://platform.deepseek.com/"
+                       target="_blank"
+                       style="color: var(--primary); text-decoration: none;">
+                        Click here to get a DeepSeek API key →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="validationMessage" style="display: none; margin-top: 1rem;"></div>
+            <div id="errorMessage" class="error-message" style="display: none; margin-top: 1rem;"></div>
+            <div id="successMessage" class="success-message" style="display: none; margin-top: 1rem;"></div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                <button onclick="testApiKey()" id="testButton" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="testButtonText">Test Connection</span>
+                    <div id="testLoader" class="spinner hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                </button>
+
+                <button onclick="updateApiKey()" id="updateButton" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span id="updateButtonText">Save API Key</span>
+                    <div id="updateLoader" class="spinner hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                </button>
+
+                <button onclick="deleteApiKey()" id="deleteButton" class="btn btn-secondary" style="margin-left: auto; background: rgba(239, 68, 68, 0.1); color: var(--error); border-color: var(--error);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete API Key
+                </button>
+            </div>
+
+            <!-- Help Text -->
+            <div style="margin-top: 2rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md);">
+                <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--primary); margin: 0 0 0.5rem 0;">
+                    Information
+                </h3>
+                <ul style="color: var(--text-muted); font-size: 0.85rem; margin: 0; padding-left: 1.5rem;">
+                    <li>Your API key is stored securely and encrypted</li>
+                    <li>You can create unlimited rules using your own API key</li>
+                    <li>If you remove your API key, the system will use the default key (if available)</li>
+                    <li>API usage costs are billed directly to your DeepSeek account</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Danger Zone: Delete Account -->
+        <div class="glass-card" style="max-width: 800px; margin: 0 auto 2rem; border-color: var(--error);">
+            <div style="border-bottom: 1px solid rgba(239, 68, 68, 0.3); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--error); margin: 0;">
+                    Danger Zone
+                </h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">
+                    Be careful, these actions cannot be undone
+                </p>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-md);">
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0 0 0.25rem 0;">
+                        Delete Account
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                        Your account and all data will be permanently deleted
+                    </p>
+                </div>
+                <button onclick="showDeleteAccountModal()" class="btn" style="background: var(--error); color: white; border: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete My Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div id="deleteAccountModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="hideDeleteAccountModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--error); margin: 0;">Confirm Account Deletion</h3>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    This action cannot be undone. Your account and the following data will be permanently deleted:
+                </p>
+                <ul style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; padding-left: 1.5rem;">
+                    <li>Your query history</li>
+                    <li>Your saved API key</li>
+                    <li>All your settings</li>
+                </ul>
+                <div class="form-group">
+                    <label class="form-label">Enter your username to confirm:</label>
+                    <input type="text" id="deleteConfirmUsername" placeholder="Your username" class="form-input">
+                </div>
+                <div id="deleteErrorMessage" class="error-message" style="display: none; margin-top: 1rem;"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="hideDeleteAccountModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="deleteAccount()" id="confirmDeleteBtn" class="btn" style="background: var(--error); color: white; border: none;">
+                    <span id="deleteButtonText">Permanently Delete My Account</span>
+                    <div id="deleteLoader" class="spinner hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        This tool was created by <span class="footer-highlight">Baran Parlak</span>.
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <style>
+        .language-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .language-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .language-option:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .language-option.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .lang-flag {
+            font-size: 1.5rem;
+        }
+        .lang-name {
+            flex: 1;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .lang-check {
+            color: var(--primary);
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .language-option.active .lang-check {
+            opacity: 1;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.hidden {
+            display: none;
+        }
+        .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            max-width: 500px;
+            width: 90%;
+            animation: modalSlideIn 0.3s ease;
+        }
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .modal-body {
+            padding: 1.5rem;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+    </style>
+
+    <script>
+        let currentUser = null;
+
+        // Check authentication and load user on page load
+        window.onload = async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    // Not authenticated - redirect to login
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+                currentUser = data.user;
+                showUserMenu(data.user);
+                await loadApiKeyStatus();
+                updateLanguageSelection();
+
+            } catch (error) {
+                // Error checking auth - redirect to login
+                console.error('Auth check error:', error);
+                window.location.href = '/login';
+            }
+        };
+
+        function showUserMenu(user) {
+            document.body.classList.remove('auth-loading');
+            const initials = user.username.substring(0, 1).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('dropdownUserName').textContent = user.username;
+            document.getElementById('dropdownUserEmail').textContent = user.email || '';
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (userMenu && !userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadApiKeyStatus() {
+            const statusDiv = document.getElementById('apiKeyStatus');
+
+            try {
+                const response = await fetch('/api/auth/api-key', {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.hasApiKey) {
+                    statusDiv.className = 'api-key-status configured';
+                    statusDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--success);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span style="font-weight: 600; color: var(--success);">API Key Configured</span>
+                                </div>
+                                <div style="margin-left: 1.75rem;">
+                                    <code class="masked-key">${data.maskedKey}</code>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.className = 'api-key-status not-configured';
+                    statusDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--warning);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div>
+                                <div style="font-weight: 600; color: var(--warning);">API Key Not Configured</div>
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                    System default key is being used (if available)
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Load API key error:', error);
+                statusDiv.className = 'api-key-status';
+                statusDiv.innerHTML = `
+                    <div style="color: var(--error);">
+                        Failed to load API key status
+                    </div>
+                `;
+            }
+        }
+
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('newApiKey');
+            const icon = document.getElementById('eyeIcon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                `;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                `;
+            }
+        }
+
+        function hideMessages() {
+            document.getElementById('validationMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        async function testApiKey() {
+            const apiKey = document.getElementById('newApiKey').value.trim();
+            const testBtn = document.getElementById('testButton');
+            const testBtnText = document.getElementById('testButtonText');
+            const testLoader = document.getElementById('testLoader');
+            const validationMsg = document.getElementById('validationMessage');
+
+            if (!apiKey) {
+                validationMsg.textContent = 'Please enter an API key';
+                validationMsg.style.display = 'block';
+                validationMsg.style.color = 'var(--error)';
+                return;
+            }
+
+            hideMessages();
+            testBtn.disabled = true;
+            testLoader.classList.remove('hidden');
+            testBtnText.textContent = 'Testing...';
+
+            try {
+                const response = await fetch('/api/auth/validate-api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ apiKey })
+                });
+
+                const result = await response.json();
+
+                if (result.valid) {
+                    validationMsg.textContent = '✓ ' + result.message;
+                    validationMsg.style.color = 'var(--success)';
+                    validationMsg.style.display = 'block';
+
+                    if (result.warning) {
+                        validationMsg.textContent += ' ⚠️ ' + result.warning;
+                    }
+                } else {
+                    validationMsg.textContent = '✗ ' + result.message;
+                    validationMsg.style.color = 'var(--error)';
+                    validationMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Test API key error:', error);
+                validationMsg.textContent = '✗ Test failed: ' + error.message;
+                validationMsg.style.color = 'var(--error)';
+                validationMsg.style.display = 'block';
+            } finally {
+                testBtn.disabled = false;
+                testLoader.classList.add('hidden');
+                testBtnText.textContent = 'Test Connection';
+            }
+        }
+
+        async function updateApiKey() {
+            const apiKey = document.getElementById('newApiKey').value.trim();
+            const updateBtn = document.getElementById('updateButton');
+            const updateBtnText = document.getElementById('updateButtonText');
+            const updateLoader = document.getElementById('updateLoader');
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+
+            if (!apiKey) {
+                errorMsg.textContent = 'Please enter an API key';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            hideMessages();
+            updateBtn.disabled = true;
+            updateLoader.classList.remove('hidden');
+            updateBtnText.textContent = 'Saving...';
+
+            try {
+                const response = await fetch('/api/auth/api-key', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ apiKey })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to update API key');
+                }
+
+                successMsg.textContent = '✓ ' + result.message;
+                successMsg.style.display = 'block';
+
+                // Clear input
+                document.getElementById('newApiKey').value = '';
+
+                // Reload status
+                await loadApiKeyStatus();
+
+                showToast('API key updated successfully');
+
+            } catch (error) {
+                console.error('Update API key error:', error);
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                updateBtn.disabled = false;
+                updateLoader.classList.add('hidden');
+                updateBtnText.textContent = 'Save API Key';
+            }
+        }
+
+        async function deleteApiKey() {
+            if (!confirm('Are you sure you want to remove your API key? The system will use the default key (if available).')) {
+                return;
+            }
+
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+
+            hideMessages();
+
+            try {
+                const response = await fetch('/api/auth/api-key', {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to delete API key');
+                }
+
+                successMsg.textContent = '✓ ' + result.message;
+                successMsg.style.display = 'block';
+
+                // Clear input
+                document.getElementById('newApiKey').value = '';
+
+                // Reload status
+                await loadApiKeyStatus();
+
+                showToast('API key deleted');
+
+            } catch (error) {
+                console.error('Delete API key error:', error);
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Delete Account functions
+        function showDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.remove('hidden');
+            document.getElementById('deleteConfirmUsername').value = '';
+            document.getElementById('deleteErrorMessage').style.display = 'none';
+        }
+
+        function hideDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.add('hidden');
+        }
+
+        async function deleteAccount() {
+            const confirmUsername = document.getElementById('deleteConfirmUsername').value.trim();
+            const errorMsg = document.getElementById('deleteErrorMessage');
+            const btn = document.getElementById('confirmDeleteBtn');
+            const btnText = document.getElementById('deleteButtonText');
+            const loader = document.getElementById('deleteLoader');
+
+            if (!currentUser || confirmUsername !== currentUser.username) {
+                errorMsg.textContent = 'Username does not match. Please enter your correct username.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = 'Deleting...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/auth/delete-account', {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to delete account');
+                }
+
+                // Success - redirect to login
+                showToast('Your account has been successfully deleted');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+
+            } catch (error) {
+                console.error('Delete account error:', error);
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = 'Permanently Delete My Account';
+            }
+        }
+
+        // Language functions
+        function updateLanguageSelection() {
+            const currentLang = typeof i18n !== 'undefined' ? i18n.currentLang : 'tr';
+            document.querySelectorAll('.language-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.lang === currentLang) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        async function changeLanguage(lang) {
+            if (typeof i18n !== 'undefined') {
+                await i18n.setLanguage(lang);
+                updateLanguageSelection();
+                showToast(i18n.t('settings.languageChanged') || 'Language changed');
+            }
+        }
+    </script>
+    <script src="particles.js"></script>
+</body>
+</html>

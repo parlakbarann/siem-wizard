@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="auth.registerPageTitle">Kayıt Ol - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+    <style>
+        .register-lang-dropdown {
+            position: relative;
+        }
+        .register-lang-dropdown-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .register-lang-dropdown-btn:hover,
+        .register-lang-dropdown-btn:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        .register-lang-dropdown-btn .flag {
+            font-size: 1.25rem;
+        }
+        .register-lang-dropdown-btn .arrow {
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+        .register-lang-dropdown.open .arrow {
+            transform: rotate(180deg);
+        }
+        .register-lang-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s;
+        }
+        .register-lang-dropdown.open .register-lang-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .register-lang-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .register-lang-dropdown-item:hover {
+            background: var(--bg-hover);
+        }
+        .register-lang-dropdown-item.selected {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .register-lang-dropdown-item .flag {
+            font-size: 1.25rem;
+        }
+        .register-lang-dropdown-item .check {
+            margin-left: auto;
+            color: var(--primary);
+            opacity: 0;
+        }
+        .register-lang-dropdown-item.selected .check {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <div class="navbar-right">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Kayıt Ol</h1>
+            <p class="page-subtitle">Hesap oluşturun ve AI destekli SIEM kurallarını kullanmaya başlayın</p>
+        </header>
+
+        <!-- Register Form -->
+        <div class="glass-card" style="max-width: 500px; margin: 0 auto;">
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">Kullanıcı Adı</label>
+                    <input type="text" id="username" placeholder="Kullanıcı adınız" class="form-input" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">E-posta</label>
+                    <input type="email" id="email" placeholder="E-posta adresiniz" class="form-input" required autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Şifre</label>
+                    <input type="password" id="password" placeholder="Şifreniz (en az 6 karakter)" class="form-input" required minlength="6" autocomplete="new-password">
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
+                        Şifreniz en az 6 karakter olmalıdır
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Şifre Tekrar</label>
+                    <input type="password" id="confirmPassword" placeholder="Şifrenizi tekrar girin" class="form-input" required autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Arayüz Dili
+                        <span style="font-weight: normal; color: var(--text-muted); font-size: 0.9rem;">
+                            (Ayarlardan değiştirebilirsiniz)
+                        </span>
+                    </label>
+                    <div class="register-lang-dropdown" id="languageDropdown">
+                        <button type="button" class="register-lang-dropdown-btn" onclick="toggleLanguageDropdown(event)">
+                            <span class="flag" id="currentFlag">🇬🇧</span>
+                            <span id="currentLangText">English</span>
+                            <span class="arrow">▼</span>
+                        </button>
+                        <div class="register-lang-dropdown-menu" id="languageSelect">
+                            <div class="register-lang-dropdown-item" data-lang="tr" onclick="selectLanguage('tr')">
+                                <span class="flag">🇹🇷</span>
+                                <span>Türkçe</span>
+                                <span class="check">✓</span>
+                            </div>
+                            <div class="register-lang-dropdown-item selected" data-lang="en" onclick="selectLanguage('en')">
+                                <span class="flag">🇬🇧</span>
+                                <span>English</span>
+                                <span class="check">✓</span>
+                            </div>
+                            <div class="register-lang-dropdown-item" data-lang="de" onclick="selectLanguage('de')">
+                                <span class="flag">🇩🇪</span>
+                                <span>Deutsch</span>
+                                <span class="check">✓</span>
+                            </div>
+                            <div class="register-lang-dropdown-item" data-lang="hi" onclick="selectLanguage('hi')">
+                                <span class="flag">🇮🇳</span>
+                                <span>हिन्दी</span>
+                                <span class="check">✓</span>
+                            </div>
+                            <div class="register-lang-dropdown-item" data-lang="es" onclick="selectLanguage('es')">
+                                <span class="flag">🇪🇸</span>
+                                <span>Español</span>
+                                <span class="check">✓</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        DeepSeek API Anahtarı
+                        <span style="font-weight: normal; color: var(--text-muted); font-size: 0.9rem;">
+                            (İsteğe Bağlı - Ayarlardan sonra ekleyebilirsiniz)
+                        </span>
+                    </label>
+                    <input
+                        type="password"
+                        id="deepseekApiKey"
+                        placeholder="sk-..."
+                        class="form-input"
+                        autocomplete="off"
+                    >
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                        <a href="https://platform.deepseek.com/"
+                           target="_blank"
+                           style="color: var(--primary); text-decoration: none;">
+                            API anahtarı almak için DeepSeek platformunu ziyaret edin →
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorArea" class="error-message" style="display: none;"></div>
+
+                <!-- Success Message -->
+                <div id="successArea" class="success-message" style="display: none;"></div>
+
+                <!-- Register Button -->
+                <button type="submit" id="registerButton" class="btn btn-primary btn-full" style="height: 56px; margin-top: 1rem;">
+                    Kayıt Ol
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Zaten hesabınız var mı?
+                    <a href="/login" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                        Giriş Yap
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Bu araç, <span class="footer-highlight">Baran Parlak</span> tarafından üretilmiştir.
+    </footer>
+
+    <script>
+        let selectedLanguage = 'en';
+
+        function toggleLanguageDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('languageDropdown');
+            dropdown.classList.toggle('open');
+        }
+
+        async function selectLanguage(lang) {
+            selectedLanguage = lang;
+
+            document.querySelectorAll('.register-lang-dropdown-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.lang === lang) {
+                    item.classList.add('selected');
+
+                    // Update main button
+                    const flag = item.querySelector('.flag').textContent;
+                    const text = item.querySelector('span:nth-child(2)').textContent;
+                    document.getElementById('currentFlag').textContent = flag;
+                    document.getElementById('currentLangText').textContent = text;
+                }
+            });
+
+            document.getElementById('languageDropdown').classList.remove('open');
+
+            // Update language using i18n
+            localStorage.setItem('language', lang);
+            await i18n.setLanguage(lang);
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('languageDropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        // Check if already logged in
+        window.onload = async () => {
+            // Force English for register page if no language is set
+            if (!localStorage.getItem('language')) {
+                localStorage.setItem('language', 'en');
+            }
+
+            // Initialize i18n
+            await i18n.init();
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    // Already logged in, redirect to home
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                // Not logged in, stay on register page
+            }
+        };
+
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const btn = document.getElementById('registerButton');
+            const errorArea = document.getElementById('errorArea');
+            const successArea = document.getElementById('successArea');
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const deepseekApiKey = document.getElementById('deepseekApiKey').value.trim();
+
+            if (!username || !email || !password || !confirmPassword) {
+                errorArea.textContent = 'Lütfen tüm zorunlu alanları doldurun.';
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                errorArea.textContent = 'Şifreler eşleşmiyor.';
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorArea.textContent = 'Şifre en az 6 karakter olmalıdır.';
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            btn.textContent = 'Kayıt yapılıyor...';
+            errorArea.style.display = 'none';
+            successArea.style.display = 'none';
+
+            try {
+                const requestBody = { username, email, password, language: selectedLanguage };
+
+                // Include API key if provided
+                if (deepseekApiKey) {
+                    requestBody.deepseekApiKey = deepseekApiKey;
+                }
+
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Kayıt başarısız');
+                }
+
+                // Success
+                let successMessage = 'Kayıt başarılı!';
+                if (result.hasApiKey) {
+                    successMessage += ' API anahtarınız kaydedildi.';
+                }
+                successMessage += ' Yönlendiriliyorsunuz...';
+
+                successArea.textContent = successMessage;
+                successArea.style.display = 'block';
+
+                // Redirect to home page after 1 second
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+
+            } catch (error) {
+                console.error('Register error:', error);
+                errorArea.textContent = error.message;
+                errorArea.style.display = 'block';
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                btn.textContent = 'Kayıt Ol';
+            }
+        }
+    </script>
+    <script src="particles.js"></script>
+</body>
+</html>

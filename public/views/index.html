@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="generator.pageTitle">Kural Oluşturucu - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+</head>
+<body class="auth-loading">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <!-- Navbar Right: User Menu -->
+            <div class="navbar-right">
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-button" onclick="toggleUserDropdown()">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName">User</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdownUserName">User</div>
+                            <div class="user-dropdown-email" id="dropdownUserEmail">user@example.com</div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="/settings" class="user-dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span data-i18n="nav.settings">Ayarlar</span>
+                            </a>
+                            <button class="user-dropdown-item danger" onclick="handleLogout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span data-i18n="nav.logout">Çıkış Yap</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="authLinks" style="display: none;">
+                    <a href="/login" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" data-i18n="nav.login">Giriş Yap</a>
+                </div>
+            </div>
+
+            <!-- Navbar Menu -->
+            <div class="navbar-menu">
+                <a href="/" class="nav-link active" data-i18n="nav.ruleGenerator">Kural Oluşturucu</a>
+                <a href="/catalog" class="nav-link" data-i18n="nav.catalog">Kural Kataloğu</a>
+                <a href="/optimizer" class="nav-link" data-i18n="nav.optimizer">Kural İyileştirici</a>
+                <a href="/log-analyzer" class="nav-link" data-i18n="nav.logAnalyzer">Log Analizci</a>
+                <a href="/rule-tester" class="nav-link" data-i18n="nav.ruleTester">Kural Test</a>
+                <a href="/analytics" class="nav-link" data-i18n="nav.analytics">Analitik</a>
+                <a href="/history" class="nav-link" data-i18n="nav.history">Geçmiş</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title" data-i18n="generator.title">Kural Oluşturucu</h1>
+            <p class="page-subtitle" data-i18n="generator.subtitle">SIEM platformunuz için doğal dilde kural kodunu otomatik olarak üretin</p>
+        </header>
+
+        <!-- Form Card -->
+        <div class="glass-card" style="max-width: 900px; margin: 0 auto;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="generator.platformLabel">SIEM Platformu</label>
+                    <select id="siemPlatform" class="form-select">
+                        <option value="Splunk" data-i18n="platforms.splunk">Splunk (SPL)</option>
+                        <option value="QRadar" data-i18n="platforms.qradar">QRadar (AQL)</option>
+                        <option value="LogSign" data-i18n="platforms.logsign">LogSign (LQL)</option>
+                        <option value="Wazuh" data-i18n="platforms.wazuh">Wazuh (XML)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="generator.ruleNameLabel">Kural Adı</label>
+                    <input type="text" id="ruleName" data-i18n-placeholder="generator.ruleNamePlaceholder" placeholder="Örn: Brute Force Tespiti" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" data-i18n="generator.requestLabel">Talep Detayları</label>
+                <textarea id="ruleInput" rows="5" data-i18n-placeholder="generator.requestPlaceholder" placeholder="Ne tür bir kural istiyorsunuz? (Örn: RDP üzerinden 5 başarısız deneme...)" class="form-textarea"></textarea>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorArea" class="error-message" style="display: none;"></div>
+
+            <!-- Generate Button -->
+            <button onclick="generateRule()" id="generateButton" class="btn btn-primary" style="width: 100%; padding: 1.25rem;">
+                <span id="buttonText" data-i18n="generator.generateBtn">Kuralı Oluştur</span>
+                <div id="loadingIndicator" class="spinner hidden"></div>
+            </button>
+        </div>
+
+        <!-- Output Section -->
+        <div style="max-width: 900px; margin: 3rem auto 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--primary);">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    <span data-i18n="generator.generatedCode">Üretilen Kod</span>
+                </h2>
+                <button id="copyButton" onclick="copyRule()" class="btn btn-secondary hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span data-i18n="common.copy">Kopyala</span>
+                </button>
+            </div>
+            <div id="ruleOutput">
+                <div style="text-align: center; padding: 3rem; border: 2px dashed var(--border-color); border-radius: var(--radius-lg); color: var(--text-muted);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin: 0 auto 1rem; opacity: 0.5;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p data-i18n="generator.emptyState">Talebinizi yukarıya yazın ve kuralın oluşturulmasını bekleyin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Bu araç, <span class="footer-highlight">Baran Parlak</span> tarafından üretilmiştir.
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span data-i18n="common.copied">✓ Başarıyla Kopyalandı!</span>
+    </div>
+
+    <script>
+        // Store last request data for regeneration
+        let lastRequestData = {
+            siemPlatform: '',
+            ruleName: '',
+            userRequest: '',
+            generatedRule: ''
+        };
+
+        // Check login status on page load
+        window.onload = async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showUserMenu(data.user);
+                } else {
+                    // Not authenticated - redirect to login
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                // Error checking auth - redirect to login
+                window.location.href = '/login';
+            }
+        };
+
+        function showUserMenu(user) {
+            document.body.classList.remove('auth-loading');
+            document.getElementById('userMenu').style.display = 'block';
+            document.getElementById('authLinks').style.display = 'none';
+
+            const initials = user.username.substring(0, 1).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('dropdownUserName').textContent = user.username;
+            document.getElementById('dropdownUserEmail').textContent = user.email || '';
+        }
+
+        function showAuthLinks() {
+            document.getElementById('userMenu').style.display = 'none';
+            document.getElementById('authLinks').style.display = 'block';
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (userMenu && !userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        async function generateRule() {
+            const btn = document.getElementById('generateButton');
+            const btnText = document.getElementById('buttonText');
+            const loader = document.getElementById('loadingIndicator');
+            const errorArea = document.getElementById('errorArea');
+            const output = document.getElementById('ruleOutput');
+
+            const siem = document.getElementById('siemPlatform').value;
+            const request = document.getElementById('ruleInput').value.trim();
+            const name = document.getElementById('ruleName').value.trim();
+
+            if (!siem || !request) {
+                errorArea.textContent = 'Lütfen platform seçin ve kural detaylarını belirtin.';
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = 'Hazırlanıyor...';
+            errorArea.style.display = 'none';
+
+            output.innerHTML = `
+                <div class="loading-overlay">
+                    <div style="display: inline-block; margin-bottom: 1rem;">
+                        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                    </div>
+                    <p style="font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">Büyücü Kuralı Oluşturuyor...</p>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">Bu işlem 10 saniye kadar sürebilir</p>
+                </div>`;
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        siemPlatform: siem,
+                        userRequest: request,
+                        ruleName: name
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Sunucu hatası: ${response.status}`);
+                }
+
+                if (result.text) {
+                    // Store last request data for regeneration
+                    lastRequestData = {
+                        siemPlatform: siem,
+                        ruleName: name,
+                        userRequest: request,
+                        generatedRule: result.text
+                    };
+
+                    output.innerHTML = `<div class="code-block"><pre>${escapeHtml(result.text)}</pre></div>`;
+                    document.getElementById('copyButton').classList.remove('hidden');
+
+                    // Show feedback UI
+                    showFeedbackUI();
+                } else {
+                    throw new Error("API'den anlamlı bir yanıt alınamadı.");
+                }
+
+            } catch (err) {
+                console.error("Hata ayrıntıları:", err);
+                errorArea.textContent = 'Hata: ' + err.message;
+                errorArea.style.display = 'block';
+                output.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: var(--radius-lg);">
+                        <p style="color: var(--error); font-weight: 500;">İşlem başarısız. Lütfen tekrar deneyin.</p>
+                    </div>`;
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = 'Kuralı Oluştur';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function copyRule() {
+            const pre = document.querySelector('#ruleOutput pre');
+            if (!pre) return;
+
+            const text = pre.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 2500);
+            }).catch(err => {
+                console.error("Kopyalama hatası:", err);
+                alert("Kopyalama başarısız oldu.");
+            });
+        }
+
+        function showFeedbackUI() {
+            // Remove existing feedback if any
+            const existingFeedback = document.getElementById('feedbackSection');
+            if (existingFeedback) {
+                existingFeedback.remove();
+            }
+
+            const output = document.getElementById('ruleOutput');
+
+            const feedbackHTML = `
+                <div id="feedbackSection" style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(99, 102, 241, 0.05); border: 1px solid var(--border-color); border-radius: var(--radius-lg);">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Did this rule work?</h3>
+                    <div id="feedbackButtons" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button onclick="handleSuccessFeedback()" class="btn" style="flex: 1; min-width: 180px; padding: 0.875rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            This worked!
+                        </button>
+                        <button onclick="handleFailureFeedback()" class="btn" style="flex: 1; min-width: 180px; padding: 0.875rem 1.5rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            This didn't work - Regenerate
+                        </button>
+                    </div>
+                    <div id="feedbackTextarea" style="display: none; margin-top: 1rem;">
+                        <label class="form-label" style="margin-bottom: 0.5rem;">What went wrong? (Optional)</label>
+                        <textarea id="feedbackInput" rows="3" placeholder="Describe the error or what didn't work..." class="form-textarea" style="width: 100%;"></textarea>
+                        <div style="display: flex; gap: 0.75rem; margin-top: 0.75rem;">
+                            <button onclick="submitRegenerateRequest()" class="btn btn-primary" style="flex: 1;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Regenerate Rule
+                            </button>
+                            <button onclick="cancelRegenerate()" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            output.insertAdjacentHTML('beforeend', feedbackHTML);
+        }
+
+        function handleSuccessFeedback() {
+            const feedbackSection = document.getElementById('feedbackSection');
+            if (feedbackSection) {
+                feedbackSection.innerHTML = `
+                    <div style="text-align: center; padding: 1.5rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: #10b981; margin: 0 auto 1rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Great! We're glad the rule worked for you.</p>
+                    </div>
+                `;
+                setTimeout(() => {
+                    feedbackSection.style.opacity = '0';
+                    feedbackSection.style.transition = 'opacity 0.3s ease-out';
+                    setTimeout(() => feedbackSection.remove(), 300);
+                }, 2000);
+            }
+        }
+
+        function handleFailureFeedback() {
+            document.getElementById('feedbackButtons').style.display = 'none';
+            document.getElementById('feedbackTextarea').style.display = 'block';
+            document.getElementById('feedbackInput').focus();
+        }
+
+        function cancelRegenerate() {
+            document.getElementById('feedbackButtons').style.display = 'flex';
+            document.getElementById('feedbackTextarea').style.display = 'none';
+            document.getElementById('feedbackInput').value = '';
+        }
+
+        async function submitRegenerateRequest() {
+            const feedbackInput = document.getElementById('feedbackInput').value.trim();
+            await regenerateRule(feedbackInput || 'No specific error');
+        }
+
+        async function regenerateRule(feedback) {
+            const btn = document.getElementById('generateButton');
+            const btnText = document.getElementById('buttonText');
+            const loader = document.getElementById('loadingIndicator');
+            const errorArea = document.getElementById('errorArea');
+            const output = document.getElementById('ruleOutput');
+
+            // Hide feedback section during regeneration
+            const feedbackSection = document.getElementById('feedbackSection');
+            if (feedbackSection) {
+                feedbackSection.style.display = 'none';
+            }
+
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = 'Regenerating...';
+            errorArea.style.display = 'none';
+
+            output.innerHTML = `
+                <div class="loading-overlay">
+                    <div style="display: inline-block; margin-bottom: 1rem;">
+                        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                    </div>
+                    <p style="font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">Regenerating Improved Rule...</p>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">Learning from previous attempt...</p>
+                </div>`;
+
+            // Build improved prompt
+            const improvedPrompt = `Previous attempt failed. User reported: ${feedback}
+
+Original request: ${lastRequestData.userRequest}
+
+Previous rule that failed:
+${lastRequestData.generatedRule}
+
+Please generate an improved ${lastRequestData.siemPlatform} rule that:
+- Fixes the issues in the previous attempt
+- Uses correct ${lastRequestData.siemPlatform} syntax and best practices
+- Includes proper regex patterns if needed
+- Is thoroughly tested and validated
+
+Generate a better rule now:`;
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        siemPlatform: lastRequestData.siemPlatform,
+                        userRequest: improvedPrompt,
+                        ruleName: lastRequestData.ruleName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Sunucu hatası: ${response.status}`);
+                }
+
+                if (result.text) {
+                    // Update last request data with new rule
+                    lastRequestData.generatedRule = result.text;
+
+                    output.innerHTML = `
+                        <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                            <p style="color: #10b981; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Regenerated Rule (Improved Version)
+                            </p>
+                        </div>
+                        <div class="code-block"><pre>${escapeHtml(result.text)}</pre></div>
+                    `;
+                    document.getElementById('copyButton').classList.remove('hidden');
+
+                    // Show feedback UI again for the new rule
+                    showFeedbackUI();
+                } else {
+                    throw new Error("API'den anlamlı bir yanıt alınamadı.");
+                }
+
+            } catch (err) {
+                console.error("Hata ayrıntıları:", err);
+                errorArea.textContent = 'Regeneration Error: ' + err.message;
+                errorArea.style.display = 'block';
+                output.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: var(--radius-lg);">
+                        <p style="color: var(--error); font-weight: 500;">Regeneration failed. Please try again.</p>
+                    </div>`;
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = 'Kuralı Oluştur';
+            }
+        }
+
+        // Particle Animation
+        (function initParticles() {
+            const canvas = document.getElementById('particleCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const particleCount = 50;
+            const colors = ['#6366f1', '#ec4899', '#14b8a6', '#8b5cf6'];
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedX = (Math.random() - 0.5) * 0.5;
+                    this.speedY = (Math.random() - 0.5) * 0.5;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                    this.pulse = Math.random() * Math.PI * 2;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.pulse += 0.02;
+                    this.opacity = 0.2 + Math.sin(this.pulse) * 0.15;
+
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function connectParticles() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 150) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = particles[i].color;
+                            ctx.globalAlpha = 0.1 * (1 - dist / 150);
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                            ctx.globalAlpha = 1;
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                connectParticles();
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+    </script>
+</body>
+</html>

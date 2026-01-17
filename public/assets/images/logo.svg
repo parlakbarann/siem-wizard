@@ -1,0 +1,38 @@
+<svg width="240" height="60" viewBox="0 0 240 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="240" height="60" fill="transparent"/>
+
+  <!-- Icon - Shield with magic wand -->
+  <g transform="translate(10, 10)">
+    <!-- Shield -->
+    <path d="M20 5 L35 8 L35 22 C35 30 28 36 20 40 C12 36 5 30 5 22 L5 8 Z"
+          fill="#3b82f6" stroke="#2563eb" stroke-width="2"/>
+
+    <!-- Magic Wand -->
+    <line x1="15" y1="25" x2="25" y2="15" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="25" cy="15" r="2" fill="#fbbf24"/>
+
+    <!-- Sparkles -->
+    <circle cx="12" cy="18" r="1" fill="#fbbf24"/>
+    <circle cx="28" cy="22" r="1" fill="#fbbf24"/>
+    <circle cx="18" cy="28" r="1" fill="#fbbf24"/>
+  </g>
+
+  <!-- Text "SIEM" -->
+  <text x="55" y="30" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#000000">
+    SIEM
+  </text>
+
+  <!-- Text "WIZARD" -->
+  <text x="55" y="48" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="600" fill="#000000">
+    WIZARD
+  </text>
+
+  <!-- Small tagline -->
+  <text x="145" y="35" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="400" fill="#6b7280">
+    AI-Powered
+  </text>
+  <text x="145" y="45" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="400" fill="#6b7280">
+    Rule Management
+  </text>
+</svg>

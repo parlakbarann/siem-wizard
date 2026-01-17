@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="ruleTester.pageTitle">Kural Test - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+</head>
+<body class="auth-loading">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <!-- Navbar Right: User Menu -->
+            <div class="navbar-right">
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-button" onclick="toggleUserDropdown()">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName">User</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdownUserName">User</div>
+                            <div class="user-dropdown-email" id="dropdownUserEmail">user@example.com</div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="/settings" class="user-dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span data-i18n="nav.settings">Ayarlar</span>
+                            </a>
+                            <button class="user-dropdown-item danger" onclick="handleLogout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span data-i18n="nav.logout">Çıkış Yap</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="authLinks" style="display: none;">
+                    <a href="/login" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" data-i18n="nav.login">Giriş Yap</a>
+                </div>
+            </div>
+
+            <!-- Navbar Menu -->
+            <div class="navbar-menu">
+                <a href="/" class="nav-link" data-i18n="nav.ruleGenerator">Kural Oluşturucu</a>
+                <a href="/catalog" class="nav-link" data-i18n="nav.catalog">Kural Kataloğu</a>
+                <a href="/optimizer" class="nav-link" data-i18n="nav.optimizer">Kural İyileştirici</a>
+                <a href="/log-analyzer" class="nav-link" data-i18n="nav.logAnalyzer">Log Analizci</a>
+                <a href="/rule-tester" class="nav-link active" data-i18n="nav.ruleTester">Kural Test</a>
+                <a href="/analytics" class="nav-link" data-i18n="nav.analytics">Analitik</a>
+                <a href="/history" class="nav-link" data-i18n="nav.history">Geçmiş</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title" data-i18n="ruleTester.title">Kural Test Aracı</h1>
+            <p class="page-subtitle" data-i18n="ruleTester.subtitle">Kurallarınızı log örnekleriyle test edin ve etkinliğini ölçün</p>
+        </header>
+
+        <!-- Platform Selection -->
+        <div class="glass-card" style="max-width: 1200px; margin: 0 auto 2rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" data-i18n="ruleTester.platformLabel">SIEM Platformu</label>
+                <select id="siemPlatform" class="form-select" style="max-width: 300px;">
+                    <option value="Splunk" data-i18n="platforms.splunk">Splunk (SPL)</option>
+                    <option value="QRadar" data-i18n="platforms.qradar">QRadar (AQL)</option>
+                    <option value="LogSign" data-i18n="platforms.logsign">LogSign (LQL)</option>
+                    <option value="Wazuh" data-i18n="platforms.wazuh">Wazuh (XML)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="tester-grid" style="max-width: 1200px; margin: 0 auto;">
+            <!-- Input Section -->
+            <div class="tester-input-card">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="ruleTester.ruleLabel">Test Edilecek Kural</label>
+                    <textarea id="ruleContent" rows="8" class="form-textarea" data-i18n-placeholder="ruleTester.rulePlaceholder" placeholder="Kural kodunuzu buraya yapıştırın..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" data-i18n="ruleTester.logsLabel">Test Logları</label>
+                    <div class="file-drop-area" id="dropArea">
+                        <svg class="file-drop-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="file-drop-text" data-i18n="ruleTester.dropLogs">Log dosyasını sürükleyip bırakın</p>
+                        <input type="file" id="fileInput" accept=".log,.txt,.json" class="hidden" onchange="handleFileSelect(event)">
+                        <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()" style="margin-top: 0.5rem;">
+                            <span data-i18n="optimizer.selectFile">Dosya Seç</span>
+                        </button>
+                    </div>
+                    <textarea id="testLogs" rows="8" class="form-textarea" style="margin-top: 1rem;" data-i18n-placeholder="ruleTester.logsPlaceholder" placeholder="Test için log örneklerini buraya yapıştırın (her satır bir log)..."></textarea>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorArea" class="error-message" style="display: none;"></div>
+
+                <!-- Test Button -->
+                <button onclick="runTest()" id="testButton" class="btn btn-primary" style="width: 100%; padding: 1.25rem;">
+                    <span id="buttonText" data-i18n="ruleTester.testBtn">Testi Çalıştır</span>
+                    <div id="loadingIndicator" class="spinner hidden"></div>
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="tester-results" id="resultsPanel">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--text-primary);" data-i18n="ruleTester.results">
+                    Test Sonuçları
+                </h3>
+
+                <div id="resultsContent">
+                    <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin: 0 auto 1rem; opacity: 0.5;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        <p>Kural ve log örneklerini girin, ardından testi çalıştırın.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Bu araç, <span class="footer-highlight">Baran Parlak</span> tarafından üretilmiştir.
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span data-i18n="common.copied">✓ Başarıyla Kopyalandı!</span>
+    </div>
+
+    <script>
+        // Check login status on page load
+        window.onload = async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showUserMenu(data.user);
+                } else {
+                    // Not authenticated - redirect to login
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                // Error checking auth - redirect to login
+                window.location.href = '/login';
+            }
+        };
+
+        function showUserMenu(user) {
+            document.body.classList.remove('auth-loading');
+            document.getElementById('userMenu').style.display = 'block';
+            document.getElementById('authLinks').style.display = 'none';
+
+            const initials = user.username.substring(0, 1).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('dropdownUserName').textContent = user.username;
+            document.getElementById('dropdownUserEmail').textContent = user.email || '';
+        }
+
+        function showAuthLinks() {
+            document.getElementById('userMenu').style.display = 'none';
+            document.getElementById('authLinks').style.display = 'block';
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userDropdown');
+            if (userMenu && !userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        // File drag and drop
+        const dropArea = document.getElementById('dropArea');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.remove('drag-over');
+            }, false);
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }, false);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('testLogs').value = e.target.result;
+            };
+            reader.readAsText(file);
+        }
+
+        async function runTest() {
+            const btn = document.getElementById('testButton');
+            const btnText = document.getElementById('buttonText');
+            const loader = document.getElementById('loadingIndicator');
+            const errorArea = document.getElementById('errorArea');
+            const resultsContent = document.getElementById('resultsContent');
+
+            const platform = document.getElementById('siemPlatform').value;
+            const ruleContent = document.getElementById('ruleContent').value.trim();
+            const testLogs = document.getElementById('testLogs').value.trim();
+
+            if (!ruleContent || !testLogs) {
+                errorArea.textContent = i18n.t('ruleTester.validationError');
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = i18n.t('ruleTester.testing');
+            errorArea.style.display = 'none';
+
+            resultsContent.innerHTML = `
+                <div class="loading-overlay">
+                    <div style="display: inline-block; margin-bottom: 1rem;">
+                        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                    </div>
+                    <p style="font-weight: 600; color: var(--primary);">${i18n.t('ruleTester.testing')}</p>
+                </div>`;
+
+            try {
+                const response = await fetch('/api/rules/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        siemPlatform: platform,
+                        ruleContent: ruleContent,
+                        testLogs: testLogs
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Sunucu hatası: ${response.status}`);
+                }
+
+                displayResults(result);
+
+            } catch (err) {
+                console.error("Test hatası:", err);
+                errorArea.textContent = 'Hata: ' + err.message;
+                errorArea.style.display = 'block';
+                resultsContent.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: var(--radius-lg);">
+                        <p style="color: var(--error); font-weight: 500;">Test başarısız. Lütfen tekrar deneyin.</p>
+                    </div>`;
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = i18n.t('ruleTester.testBtn');
+            }
+        }
+
+        function displayResults(result) {
+            const resultsContent = document.getElementById('resultsContent');
+            const detectionRate = result.detectionRate || 0;
+            const rateClass = detectionRate >= 70 ? 'high' : detectionRate >= 40 ? 'medium' : 'low';
+            const riskClass = result.falsePositiveRisk === 'low' ? 'low' : result.falsePositiveRisk === 'medium' ? 'medium' : 'high';
+
+            let matchedLogsHtml = '';
+            if (result.matchedLogs && result.matchedLogs.length > 0) {
+                matchedLogsHtml = result.matchedLogs.map(log =>
+                    `<div class="test-log-item matched">${escapeHtml(log)}</div>`
+                ).join('');
+            } else {
+                matchedLogsHtml = '<p style="color: var(--text-muted); font-size: 0.875rem;">Eşleşen log bulunamadı.</p>';
+            }
+
+            let unmatchedLogsHtml = '';
+            if (result.unmatchedLogs && result.unmatchedLogs.length > 0) {
+                unmatchedLogsHtml = result.unmatchedLogs.slice(0, 5).map(log =>
+                    `<div class="test-log-item unmatched">${escapeHtml(log)}</div>`
+                ).join('');
+                if (result.unmatchedLogs.length > 5) {
+                    unmatchedLogsHtml += `<p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">+${result.unmatchedLogs.length - 5} daha...</p>`;
+                }
+            }
+
+            let issuesHtml = '';
+            if (result.issues && result.issues.length > 0) {
+                issuesHtml = `
+                    <div class="issues-list">
+                        ${result.issues.map(issue => `
+                            <div class="issue-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span>${escapeHtml(issue)}</span>
+                            </div>
+                        `).join('')}
+                    </div>`;
+            }
+
+            resultsContent.innerHTML = `
+                <div class="test-result-header">
+                    <div>
+                        <div class="test-detection-rate ${rateClass}">${detectionRate}%</div>
+                        <div style="color: var(--text-muted); font-size: 0.875rem;" data-i18n="ruleTester.detectionRate">Tespit Oranı</div>
+                    </div>
+                    <div class="risk-indicator ${riskClass}">
+                        <span>${i18n.t('ruleTester.falsePositiveRisk')}:</span>
+                        <strong>${i18n.t('ruleTester.risk' + result.falsePositiveRisk.charAt(0).toUpperCase() + result.falsePositiveRisk.slice(1))}</strong>
+                    </div>
+                </div>
+
+                <div class="test-logs-section">
+                    <div class="test-logs-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--success);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span data-i18n="ruleTester.matchedLogs">Eşleşen Loglar</span>
+                        <span style="color: var(--success);">(${result.matchedLogs?.length || 0})</span>
+                    </div>
+                    ${matchedLogsHtml}
+                </div>
+
+                ${result.unmatchedLogs && result.unmatchedLogs.length > 0 ? `
+                <div class="test-logs-section">
+                    <div class="test-logs-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--text-muted);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span data-i18n="ruleTester.unmatchedLogs">Eşleşmeyen Loglar</span>
+                        <span style="color: var(--text-muted);">(${result.unmatchedLogs?.length || 0})</span>
+                    </div>
+                    ${unmatchedLogsHtml}
+                </div>
+                ` : ''}
+
+                ${issuesHtml ? `
+                <div class="test-logs-section">
+                    <div class="test-logs-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--warning);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span data-i18n="ruleTester.issues">Tespit Edilen Sorunlar</span>
+                    </div>
+                    ${issuesHtml}
+                </div>
+                ` : ''}
+            `;
+
+            // Re-apply translations to new elements
+            if (typeof i18n !== 'undefined') {
+                i18n.updateDOM();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+    <script src="particles.js"></script>
+</body>
+</html>

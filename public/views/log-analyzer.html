@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="logAnalyzer.pageTitle">Log Analizci - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+</head>
+<body class="auth-loading">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <!-- Navbar Right: User Menu -->
+            <div class="navbar-right">
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-button" onclick="toggleUserDropdown()">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName">User</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdownUserName">User</div>
+                            <div class="user-dropdown-email" id="dropdownUserEmail">user@example.com</div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="/settings" class="user-dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span data-i18n="nav.settings">Ayarlar</span>
+                            </a>
+                            <button class="user-dropdown-item danger" onclick="handleLogout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span data-i18n="nav.logout">Çıkış Yap</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="authLinks" style="display: none;">
+                    <a href="/login" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" data-i18n="nav.login">Giriş Yap</a>
+                </div>
+            </div>
+
+            <!-- Navbar Menu -->
+            <div class="navbar-menu">
+                <a href="/" class="nav-link" data-i18n="nav.ruleGenerator">Kural Oluşturucu</a>
+                <a href="/catalog" class="nav-link" data-i18n="nav.catalog">Kural Kataloğu</a>
+                <a href="/optimizer" class="nav-link" data-i18n="nav.optimizer">Kural İyileştirici</a>
+                <a href="/log-analyzer" class="nav-link active" data-i18n="nav.logAnalyzer">Log Analizci</a>
+                <a href="/rule-tester" class="nav-link" data-i18n="nav.ruleTester">Kural Test</a>
+                <a href="/analytics" class="nav-link" data-i18n="nav.analytics">Analitik</a>
+                <a href="/history" class="nav-link" data-i18n="nav.history">Geçmiş</a>
+            </div>
+        </div>
+    </nav>
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Log Analizci</h1>
+            <p class="page-subtitle">Log örneklerinden otomatik kural ve korelasyon üretin</p>
+        </header>
+
+        <!-- Form Card -->
+        <div class="glass-card" style="max-width: 900px; margin: 0 auto;">
+            <div class="form-group">
+                <label class="form-label">SIEM Platformu</label>
+                <select id="siemPlatform" class="form-select">
+                    <option value="Splunk">Splunk (SPL)</option>
+                    <option value="QRadar">QRadar (AQL)</option>
+                    <option value="LogSign">LogSign (LQL)</option>
+                    <option value="Wazuh">Wazuh (XML)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">📋 Log Örneği</label>
+                <textarea id="logInput" rows="8" placeholder="Log örneğinizi buraya yapıştırın...&#10;&#10;Örnek:&#10;2024-01-15 10:23:45 auth.log: Failed password for admin from 192.168.1.100 port 22 ssh2&#10;2024-01-15 10:23:47 auth.log: Failed password for admin from 192.168.1.100 port 22 ssh2&#10;2024-01-15 10:23:49 auth.log: Failed password for admin from 192.168.1.100 port 22 ssh2" class="form-textarea" style="font-family: var(--font-mono);"></textarea>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
+                    💡 İpucu: Birden fazla ilgili log örneği verin, AI daha iyi korelasyonlar kurabilir
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🎯 Ne Tespit Etmek İstiyorsunuz?</label>
+                <textarea id="detectionGoal" rows="3" placeholder="Bu loglardan ne tür güvenlik olaylarını tespit etmek istiyorsunuz?&#10;&#10;Örnek: SSH üzerinden brute force saldırılarını tespit etmek istiyorum. 5 başarısız deneme sonrası alarm üretsin." class="form-textarea"></textarea>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorArea" class="error-message" style="display: none;"></div>
+
+            <!-- Analyze Button -->
+            <button onclick="analyzeLog()" id="analyzeButton" class="btn btn-primary" style="width: 100%; padding: 1.25rem;">
+                <span id="buttonText">Kural Oluştur</span>
+                <div id="loadingIndicator" class="spinner hidden"></div>
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" style="max-width: 900px; margin: 3rem auto 0; display: none;">
+            <!-- Result Tabs -->
+            <div class="tabs" style="margin-bottom: 1.5rem;">
+                <button onclick="switchResultTab('rule')" id="tabRule" class="tab active">
+                    🎯 Tespit Kuralı
+                </button>
+                <button onclick="switchResultTab('correlation')" id="tabCorrelation" class="tab">
+                    ⚡ Korelasyon Kuralı
+                </button>
+                <button onclick="switchResultTab('explanation')" id="tabExplanation" class="tab">
+                    📖 Açıklama
+                </button>
+            </div>
+
+            <!-- Rule Tab Content -->
+            <div id="ruleContent" class="result-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--primary);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                        Tespit Kuralı
+                    </h2>
+                    <button onclick="copyContent('ruleOutput')" class="btn btn-secondary">
+                        Kopyala
+                    </button>
+                </div>
+                <div id="ruleOutput">
+                    <div style="text-align: center; padding: 3rem; border: 2px dashed var(--border-color); border-radius: var(--radius-lg); color: var(--text-muted);">
+                        Tespit kuralı burada görünecek
+                    </div>
+                </div>
+            </div>
+
+            <!-- Correlation Tab Content -->
+            <div id="correlationContent" class="result-content hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--primary);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Korelasyon Kuralı
+                    </h2>
+                    <button onclick="copyContent('correlationOutput')" class="btn btn-secondary">
+                        Kopyala
+                    </button>
+                </div>
+                <div id="correlationOutput">
+                    <div style="text-align: center; padding: 3rem; border: 2px dashed var(--border-color); border-radius: var(--radius-lg); color: var(--text-muted);">
+                        Korelasyon kuralı burada görünecek
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explanation Tab Content -->
+            <div id="explanationContent" class="result-content hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--primary);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Açıklama ve Öneriler
+                    </h2>
+                    <button onclick="copyContent('explanationOutput')" class="btn btn-secondary">
+                        Kopyala
+                    </button>
+                </div>
+                <div id="explanationOutput">
+                    <div style="text-align: center; padding: 3rem; border: 2px dashed var(--border-color); border-radius: var(--radius-lg); color: var(--text-muted);">
+                        Açıklama ve öneriler burada görünecek
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Bu araç, <span class="footer-highlight">Baran Parlak</span> tarafından üretilmiştir.
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        ✓ Başarıyla Kopyalandı!
+    </div>
+
+    <script>
+        // Check login status on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showUserMenu(data.user);
+                } else {
+                    // Not authenticated - redirect to login
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                // Error checking auth - redirect to login
+                window.location.href = '/login';
+            }
+        });
+
+        function showUserMenu(user) {
+            document.body.classList.remove('auth-loading');
+            document.getElementById('userMenu').style.display = 'block';
+            document.getElementById('authLinks').style.display = 'none';
+
+            const initials = user.username.substring(0, 1).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('dropdownUserName').textContent = user.username;
+            document.getElementById('dropdownUserEmail').textContent = user.email || '';
+        }
+
+        function showAuthLinks() {
+            document.getElementById('userMenu').style.display = 'none';
+            document.getElementById('authLinks').style.display = 'block';
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (userMenu && !userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        async function analyzeLog() {
+            const btn = document.getElementById('analyzeButton');
+            const btnText = document.getElementById('buttonText');
+            const loader = document.getElementById('loadingIndicator');
+            const errorArea = document.getElementById('errorArea');
+            const resultsSection = document.getElementById('resultsSection');
+
+            const platform = document.getElementById('siemPlatform').value;
+            const logSample = document.getElementById('logInput').value.trim();
+            const goal = document.getElementById('detectionGoal').value.trim();
+
+            if (!platform || !logSample || !goal) {
+                errorArea.textContent = 'Lütfen tüm alanları doldurun.';
+                errorArea.style.display = 'block';
+                return;
+            }
+
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = 'Analiz Ediliyor...';
+            errorArea.style.display = 'none';
+
+            resultsSection.style.display = 'block';
+            const loadingHtml = `
+                <div class="loading-overlay">
+                    <div style="display: inline-block; margin-bottom: 1rem;">
+                        <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                    </div>
+                    <p style="font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">AI Log Analiz Ediyor...</p>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">Kural ve korelasyonlar oluşturuluyor, bu 15-20 saniye sürebilir</p>
+                </div>`;
+
+            document.getElementById('ruleOutput').innerHTML = loadingHtml;
+            document.getElementById('correlationOutput').innerHTML = loadingHtml;
+            document.getElementById('explanationOutput').innerHTML = loadingHtml;
+
+            try {
+                const response = await fetch('/api/analyze-log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        siemPlatform: platform,
+                        logSample: logSample,
+                        detectionGoal: goal
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Sunucu hatası: ${response.status}`);
+                }
+
+                if (result.detectionRule && result.correlationRule && result.explanation) {
+                    displayResult('ruleOutput', result.detectionRule);
+                    displayResult('correlationOutput', result.correlationRule);
+                    displayResult('explanationOutput', result.explanation);
+                } else {
+                    throw new Error("API'den anlamlı bir yanıt alınamadı.");
+                }
+
+            } catch (err) {
+                console.error("Analiz hatası:", err);
+                errorArea.textContent = 'Hata: ' + err.message;
+                errorArea.style.display = 'block';
+
+                const errorHtml = `
+                    <div style="text-align: center; padding: 2rem; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: var(--radius-lg);">
+                        <p style="color: var(--error); font-weight: 500;">Analiz başarısız. Lütfen tekrar deneyin.</p>
+                    </div>`;
+                document.getElementById('ruleOutput').innerHTML = errorHtml;
+                document.getElementById('correlationOutput').innerHTML = errorHtml;
+                document.getElementById('explanationOutput').innerHTML = errorHtml;
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = 'Kural Oluştur';
+            }
+        }
+
+        function displayResult(elementId, content) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="code-block"><pre>${escapeHtml(content)}</pre></div>`;
+        }
+
+        function switchResultTab(tab) {
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+
+            document.getElementById('ruleContent').classList.add('hidden');
+            document.getElementById('correlationContent').classList.add('hidden');
+            document.getElementById('explanationContent').classList.add('hidden');
+
+            if (tab === 'rule') {
+                document.getElementById('ruleContent').classList.remove('hidden');
+            } else if (tab === 'correlation') {
+                document.getElementById('correlationContent').classList.remove('hidden');
+            } else if (tab === 'explanation') {
+                document.getElementById('explanationContent').classList.remove('hidden');
+            }
+        }
+
+        function copyContent(elementId) {
+            const pre = document.querySelector(`#${elementId} pre`);
+            if (!pre) return;
+
+            const text = pre.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 2500);
+            }).catch(err => {
+                console.error("Kopyalama hatası:", err);
+                alert("Kopyalama başarısız oldu.");
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+    <script src="particles.js"></script>
+</body>
+</html>

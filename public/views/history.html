@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-page-title="history.pageTitle">Sorgu Geçmişi - SIEM Wizard</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script src="/i18n/index.js"></script>
+    <style>
+        .history-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .history-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .history-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            min-width: 250px;
+        }
+
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .history-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .history-item-info {
+            flex: 1;
+        }
+
+        .history-item-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .type-generate {
+            background: #10b98120;
+            color: #10b981;
+        }
+
+        .type-optimize {
+            background: #3b82f620;
+            color: #3b82f6;
+        }
+
+        .type-analyze-log {
+            background: #f59e0b20;
+            color: #f59e0b;
+        }
+
+        .history-item-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.delete {
+            color: #ef4444;
+        }
+
+        .action-btn.delete:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .history-item-content {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+            margin-top: 0;
+            border-top: none;
+            transition: max-height 0.4s ease, opacity 0.3s ease, padding-top 0.3s ease, margin-top 0.3s ease;
+        }
+
+        .history-item.expanded .history-item-content {
+            max-height: 2000px;
+            opacity: 1;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .expand-indicator {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            transition: transform 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .expand-indicator .arrow {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .history-item.expanded .expand-indicator .arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Toggle All Button */
+        .toggle-all-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .toggle-all-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .toggle-all-btn .icon {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-all-btn.expanded .icon {
+            transform: rotate(180deg);
+        }
+
+        .content-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .content-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .content-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .content-value {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-hint {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--success-color, #10b981);
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .platform-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .history-controls {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-select,
+            .search-input {
+                width: 100%;
+            }
+
+            .history-item-header {
+                flex-direction: column;
+            }
+
+            .history-item-actions {
+                width: 100%;
+            }
+
+            .action-btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body class="auth-loading">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="/assets/images/logo.svg" alt="SIEM Wizard Logo" class="logo-image">
+            </a>
+            <!-- Navbar Right: User Menu -->
+            <div class="navbar-right">
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-button" onclick="toggleUserDropdown()">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName">User</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdownUserName">User</div>
+                            <div class="user-dropdown-email" id="dropdownUserEmail">user@example.com</div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="/settings" class="user-dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span data-i18n="nav.settings">Ayarlar</span>
+                            </a>
+                            <button class="user-dropdown-item danger" onclick="handleLogout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span data-i18n="nav.logout">Çıkış Yap</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="authLinks" style="display: none;">
+                    <a href="/login" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" data-i18n="nav.login">Giriş Yap</a>
+                </div>
+            </div>
+
+            <!-- Navbar Menu -->
+            <div class="navbar-menu">
+                <a href="/" class="nav-link" data-i18n="nav.ruleGenerator">Kural Oluşturucu</a>
+                <a href="/catalog" class="nav-link" data-i18n="nav.catalog">Kural Kataloğu</a>
+                <a href="/optimizer" class="nav-link" data-i18n="nav.optimizer">Kural İyileştirici</a>
+                <a href="/log-analyzer" class="nav-link" data-i18n="nav.logAnalyzer">Log Analizci</a>
+                <a href="/rule-tester" class="nav-link" data-i18n="nav.ruleTester">Kural Test</a>
+                <a href="/analytics" class="nav-link" data-i18n="nav.analytics">Analitik</a>
+                <a href="/history" class="nav-link active" data-i18n="nav.history">Geçmiş</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Decorative Glow Lines -->
+    <div class="glow-line"></div>
+    <div class="glow-line"></div>
+
+    <!-- Floating Orbs -->
+    <div class="floating-orb floating-orb-1"></div>
+    <div class="floating-orb floating-orb-2"></div>
+    <div class="floating-orb floating-orb-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <div class="history-container">
+        <div class="history-header">
+            <h1 class="history-title">Sorgu Geçmişi</h1>
+            <div class="history-controls">
+                <div class="filter-group">
+                    <select id="typeFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="all">Tüm Tipler</option>
+                        <option value="generate">Kural Oluşturma</option>
+                        <option value="optimize">Kural Optimizasyon</option>
+                        <option value="analyze-log">Log Analizi</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="platformFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="all">Tüm Platformlar</option>
+                        <option value="Splunk">Splunk</option>
+                        <option value="QRadar">QRadar</option>
+                        <option value="LogSign">LogSign</option>
+                        <option value="Wazuh">Wazuh</option>
+                    </select>
+                </div>
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Ara..."
+                    oninput="applyFilters()"
+                >
+                <button class="toggle-all-btn" id="toggleAllBtn" onclick="toggleAll()">
+                    <span class="icon">▼</span>
+                    <span id="toggleAllText">Tümünü Genişlet</span>
+                </button>
+                <button class="btn btn-danger" onclick="confirmClearAll()">
+                    🗑️ Tümünü Sil
+                </button>
+            </div>
+        </div>
+
+        <div class="history-stats" id="statsContainer">
+            <div class="stat-card">
+                <div class="stat-value" id="totalQueries">0</div>
+                <div class="stat-label">Toplam Sorgu</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalGenerate">0</div>
+                <div class="stat-label">Kural Oluşturma</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalOptimize">0</div>
+                <div class="stat-label">Optimizasyon</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAnalyze">0</div>
+                <div class="stat-label">Log Analizi</div>
+            </div>
+        </div>
+
+        <div id="loadingIndicator" class="loading">
+            Geçmiş yükleniyor...
+        </div>
+
+        <div id="historyList" class="history-list" style="display: none;">
+            <!-- History items will be rendered here -->
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-text">Henüz sorgu geçmişi yok</div>
+            <div class="empty-state-hint">API ile yaptığınız sorgular burada görünecektir</div>
+        </div>
+    </div>
+
+    <script>
+        let allHistory = [];
+        let filteredHistory = [];
+
+        // Check login status and load history on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuthStatus();
+            await loadHistory();
+        });
+
+        // Check authentication status
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showUserMenu(data.user);
+                } else {
+                    // Not authenticated - redirect to login
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                // Error checking auth - redirect to login
+                window.location.href = '/login';
+            }
+        }
+
+        function showUserMenu(user) {
+            document.body.classList.remove('auth-loading');
+            document.getElementById('userMenu').style.display = 'block';
+            document.getElementById('authLinks').style.display = 'none';
+
+            const initials = user.username.substring(0, 1).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('dropdownUserName').textContent = user.username;
+            document.getElementById('dropdownUserEmail').textContent = user.email || '';
+        }
+
+        function showAuthLinks() {
+            document.getElementById('userMenu').style.display = 'none';
+            document.getElementById('authLinks').style.display = 'block';
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (userMenu && !userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/history?limit=100', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                document.getElementById('loadingIndicator').style.display = 'none';
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    throw new Error(data.message || 'Geçmiş yüklenemedi');
+                }
+
+                allHistory = data.history || [];
+                filteredHistory = [...allHistory];
+
+                updateStats();
+                renderHistory();
+
+            } catch (error) {
+                console.error('Load history error:', error);
+                showToast('Geçmiş yüklenirken hata oluştu: ' + error.message, 'error');
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        function updateStats() {
+            const totalQueries = allHistory.length;
+            const totalGenerate = allHistory.filter(h => h.query_type === 'generate').length;
+            const totalOptimize = allHistory.filter(h => h.query_type === 'optimize').length;
+            const totalAnalyze = allHistory.filter(h => h.query_type === 'analyze-log').length;
+
+            document.getElementById('totalQueries').textContent = totalQueries;
+            document.getElementById('totalGenerate').textContent = totalGenerate;
+            document.getElementById('totalOptimize').textContent = totalOptimize;
+            document.getElementById('totalAnalyze').textContent = totalAnalyze;
+        }
+
+        function applyFilters() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const platformFilter = document.getElementById('platformFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredHistory = allHistory.filter(item => {
+                // Type filter
+                if (typeFilter !== 'all' && item.query_type !== typeFilter) {
+                    return false;
+                }
+
+                // Platform filter
+                if (platformFilter !== 'all' && item.siem_platform !== platformFilter) {
+                    return false;
+                }
+
+                // Search filter
+                if (searchTerm) {
+                    const searchableText = JSON.stringify(item).toLowerCase();
+                    if (!searchableText.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filteredHistory.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            container.style.display = 'flex';
+            emptyState.style.display = 'none';
+
+            container.innerHTML = filteredHistory.map(item => renderHistoryItem(item)).join('');
+        }
+
+        function renderHistoryItem(item) {
+            const typeLabels = {
+                'generate': 'Kural Oluşturma',
+                'optimize': 'Kural Optimizasyon',
+                'analyze-log': 'Log Analizi'
+            };
+
+            const typeLabel = typeLabels[item.query_type] || item.query_type;
+            const createdAt = new Date(item.created_at).toLocaleString('tr-TR');
+
+            return `
+                <div class="history-item" id="history-item-${item.id}">
+                    <div class="history-item-header" onclick="toggleContent(${item.id})">
+                        <div class="history-item-info">
+                            <span class="history-item-type type-${item.query_type}">${typeLabel}</span>
+                            <div class="history-item-meta">
+                                <span class="meta-item">
+                                    📅 ${createdAt}
+                                </span>
+                                ${item.siem_platform ? `
+                                    <span class="meta-item">
+                                        <span class="platform-badge">${item.siem_platform}</span>
+                                    </span>
+                                ` : ''}
+                                <span class="meta-item expand-indicator">
+                                    <span class="arrow">▼</span> Detaylar
+                                </span>
+                            </div>
+                        </div>
+                        <div class="history-item-actions" onclick="event.stopPropagation()">
+                            <button class="action-btn" onclick="copyToClipboard(${item.id})">
+                                📋 Kopyala
+                            </button>
+                            <button class="action-btn delete" onclick="deleteHistoryItem(${item.id})">
+                                🗑️ Sil
+                            </button>
+                        </div>
+                    </div>
+                    <div class="history-item-content" id="content-${item.id}">
+                        ${renderItemContent(item)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderItemContent(item) {
+            let html = '<div class="content-section"><div class="content-label">İstek Detayları</div><div class="content-value">';
+
+            if (item.query_type === 'generate') {
+                html += `<strong>Platform:</strong> ${item.request_data.siemPlatform}<br>`;
+                html += `<strong>Kural Adı:</strong> ${item.request_data.ruleName || 'Belirtilmemiş'}<br>`;
+                html += `<strong>Kullanıcı İsteği:</strong><br>${escapeHtml(item.request_data.userRequest)}`;
+            } else if (item.query_type === 'optimize') {
+                html += `<strong>Platform:</strong> ${item.request_data.siemPlatform}<br>`;
+                html += `<strong>Kural İçeriği:</strong><br><pre class="code-block">${escapeHtml(item.request_data.ruleContent)}</pre>`;
+            } else if (item.query_type === 'analyze-log') {
+                html += `<strong>Platform:</strong> ${item.request_data.siemPlatform}<br>`;
+                html += `<strong>Tespit Hedefi:</strong> ${escapeHtml(item.request_data.detectionGoal)}<br>`;
+                html += `<strong>Log Örneği:</strong><br><pre class="code-block">${escapeHtml(item.request_data.logSample)}</pre>`;
+            }
+
+            html += '</div></div>';
+
+            // Response section
+            html += '<div class="content-section"><div class="content-label">Yanıt</div>';
+
+            if (item.query_type === 'generate') {
+                html += `<pre class="code-block">${escapeHtml(item.response_data.text)}</pre>`;
+            } else if (item.query_type === 'optimize') {
+                html += `<div class="content-value">${escapeHtml(item.response_data.suggestions)}</div>`;
+            } else if (item.query_type === 'analyze-log') {
+                html += `<div class="content-value">`;
+                html += `<strong>Tespit Kuralı:</strong><br><pre class="code-block">${escapeHtml(item.response_data.detectionRule)}</pre><br>`;
+                html += `<strong>Korelasyon Kuralı:</strong><br><pre class="code-block">${escapeHtml(item.response_data.correlationRule)}</pre><br>`;
+                html += `<strong>Açıklama:</strong><br>${escapeHtml(item.response_data.explanation)}`;
+                html += `</div>`;
+            }
+
+            html += '</div>';
+
+            return html;
+        }
+
+        async function copyToClipboard(itemId) {
+            const item = allHistory.find(h => h.id === itemId);
+            if (!item) return;
+
+            let textToCopy = '';
+
+            if (item.query_type === 'generate') {
+                textToCopy = item.response_data.text;
+            } else if (item.query_type === 'optimize') {
+                textToCopy = item.response_data.suggestions;
+            } else if (item.query_type === 'analyze-log') {
+                textToCopy = `Tespit Kuralı:\n${item.response_data.detectionRule}\n\nKorelasyon Kuralı:\n${item.response_data.correlationRule}\n\nAçıklama:\n${item.response_data.explanation}`;
+            }
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                showToast('Panoya kopyalandı!', 'success');
+            } catch (error) {
+                showToast('Kopyalama başarısız', 'error');
+            }
+        }
+
+        async function deleteHistoryItem(itemId) {
+            if (!confirm('Bu sorguyu silmek istediğinizden emin misiniz?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/history/${itemId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Silme işlemi başarısız');
+                }
+
+                // Remove from local array
+                allHistory = allHistory.filter(h => h.id !== itemId);
+                applyFilters();
+                updateStats();
+                showToast('Sorgu silindi', 'success');
+
+            } catch (error) {
+                console.error('Delete error:', error);
+                showToast('Silme başarısız: ' + error.message, 'error');
+            }
+        }
+
+        async function confirmClearAll() {
+            if (!confirm('TÜM sorgu geçmişinizi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/history', {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Temizleme işlemi başarısız');
+                }
+
+                allHistory = [];
+                filteredHistory = [];
+                updateStats();
+                renderHistory();
+                showToast('Tüm geçmiş silindi', 'success');
+
+            } catch (error) {
+                console.error('Clear all error:', error);
+                showToast('Temizleme başarısız: ' + error.message, 'error');
+            }
+        }
+
+        let allExpanded = false;
+
+        function toggleContent(itemId) {
+            const item = document.getElementById(`history-item-${itemId}`);
+
+            if (item) {
+                item.classList.toggle('expanded');
+                updateToggleAllButton();
+            }
+        }
+
+        function toggleAll() {
+            const items = document.querySelectorAll('.history-item');
+            const btn = document.getElementById('toggleAllBtn');
+            const text = document.getElementById('toggleAllText');
+
+            allExpanded = !allExpanded;
+
+            items.forEach(item => {
+                if (allExpanded) {
+                    item.classList.add('expanded');
+                } else {
+                    item.classList.remove('expanded');
+                }
+            });
+
+            if (allExpanded) {
+                btn.classList.add('expanded');
+                text.textContent = 'Tümünü Daralt';
+            } else {
+                btn.classList.remove('expanded');
+                text.textContent = 'Tümünü Genişlet';
+            }
+        }
+
+        function updateToggleAllButton() {
+            const items = document.querySelectorAll('.history-item');
+            const expandedItems = document.querySelectorAll('.history-item.expanded');
+            const btn = document.getElementById('toggleAllBtn');
+            const text = document.getElementById('toggleAllText');
+
+            if (expandedItems.length === items.length && items.length > 0) {
+                allExpanded = true;
+                btn.classList.add('expanded');
+                text.textContent = 'Tümünü Daralt';
+            } else if (expandedItems.length === 0) {
+                allExpanded = false;
+                btn.classList.remove('expanded');
+                text.textContent = 'Tümünü Genişlet';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+
+            if (type === 'error') {
+                toast.style.background = '#ef4444';
+            }
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+    <script src="particles.js"></script>
+</body>
+</html>
